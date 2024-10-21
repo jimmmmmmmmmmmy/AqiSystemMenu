@@ -1,0 +1,96 @@
+# Summary of Problems and Solutions in AQI App Development
+
+## 1. Uninitialized Object Warning and NSRect TypeError
+
+**Problem:** 
+```
+UninitializedDeallocWarning: leaking an uninitialized object of type CustomWindow
+TypeError: CoreFoundation.CGRect() takes at most 2 arguments (4 given)
+```
+
+**Solution:**
+- Updated `CustomWindow` class initialization method.
+- Changed `NSRect` to `NSMakeRect` for creating rectangle objects.
+- Modified `AQIApp` to correctly initialize `CustomWindow`.
+
+## 2. NSApp Delegate Setting Error
+
+**Problem:**
+```
+AttributeError: 'NoneType' object has no attribute 'setDelegate_'
+```
+
+**Solution:**
+- Removed `NSApp.setDelegate_(self)` from `AQIApp.__init__`.
+- Adjusted the application lifecycle handling to work better with `rumps`.
+
+## 3. NSApp Not Defined in CustomWindow
+
+**Problem:**
+```
+NameError: name 'NSApp' is not defined
+```
+
+**Solution:**
+- Replaced `NSApp` with `NSApplication.sharedApplication()` in the `CustomWindow` class.
+- Updated imports to include necessary components from AppKit.
+
+## 5. Secure Coding Warning
+
+**Problem:**
+```
+WARNING: Secure coding is not enabled for restorable state!
+```
+
+**Solution:**
+- Added `applicationSupportsSecureRestorableState_` method to `AQIApp` class:
+  ```python
+  @objc.python_method
+  def applicationSupportsSecureRestorableState_(self, app):
+      return True
+  ```
+
+## Summary
+
+1. Initialization for Objective-C based classes in Python.
+2. PyObjC bindings and syntax
+3. Handling lifecycle and delegate methods when using `rumps`.
+4. Addressing macOS-specific warnings and best practices.
+
+Learn more objective-c
+
+
+Problem:
+
+The app was crashing when trying to reopen the Details Custom Window a second time after closing it.
+The Details Custom Window was not closing properly when clicking the red close button, and it required multiple clicks to close the window.
+
+Steps to Resolve the Crashing Issue:
+
+Added an app property to the CustomWindow class to store a reference to the AQIApp instance.
+Modified the showWindow_withText_andApp_ method in the CustomWindow class to accept the AQIApp instance as a parameter and store it in the app property.
+Updated the windowWillClose_ method in the CustomWindowDelegate class to check if the app property of the CustomWindow is not None. If it's not None, set the custom_window property of the AQIApp instance to None.
+Modified the show_details method in the AQIApp class to pass the self instance (representing the AQIApp instance) to the showWindow_withText_andApp_ method of the CustomWindow.
+
+These changes ensured that the custom_window property of the AQIApp instance was properly managed and set to None when the Details window was closed, preventing the app from crashing when reopening the Details window.
+Steps to Resolve the Window Not Closing Properly:
+
+Removed the separate CustomWindowDelegate class and made the CustomWindow class itself the delegate of the window.
+In the showWindow_withText_andApp_ method, set the window delegate to self using self.window.setDelegate_(self).
+Implemented the windowShouldClose_ method directly in the CustomWindow class to handle the window closing event.
+In the windowShouldClose_ method, called self.closeWindow() to properly close the window, updated the custom_window property of the AQIApp instance, and returned True to allow the window to close.
+
+These changes resolved the issue of the Details Custom Window not closing properly when clicking the red close button. By making the CustomWindow class the delegate of the window and implementing the windowShouldClose_ method, we were able to properly handle the window closing event and ensure that the window closes as expected.
+
+
+Summary:
+
+The crashing issue when reopening the Details window was resolved by properly managing the custom_window property of the AQIApp instance and setting it to None when the window was closed.
+The issue with the Details window not closing properly was resolved by making the CustomWindow class the delegate of the window and implementing the windowShouldClose_ method to handle the window closing event correctly.
+
+The key takeaways are:
+
+Properly managing the custom_window property of the AQIApp instance to prevent crashing when reopening the Details window.
+Using the windowShouldClose_ method instead of windowWillClose_ to handle the window closing event.
+Making the CustomWindow class itself the delegate of the window, rather than using a separate delegate class.
+Calling self.closeWindow() in the windowShouldClose_ method to properly close the window and update the necessary properties.
