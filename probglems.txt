@@ -94,3 +94,126 @@ Properly managing the custom_window property of the AQIApp instance to prevent c
 Using the windowShouldClose_ method instead of windowWillClose_ to handle the window closing event.
 Making the CustomWindow class itself the delegate of the window, rather than using a separate delegate class.
 Calling self.closeWindow() in the windowShouldClose_ method to properly close the window and update the necessary properties.
+
+++++++++
+
+# AQI App Technical Diagnosis
+
+## Issue 1: Application Crash on Reopening Details Window
+
+### Problem
+The application crashed when attempting to reopen the Details Custom Window after closing it.
+
+### Root Cause
+Improper management of the `custom_window` property in the `AQIApp` class led to a stale reference being used when trying to reopen the window.
+
+### Solution
+1. Added an `app` property to the `CustomWindow` class to maintain a reference to the `AQIApp` instance.
+2. Modified `showWindow_withText_andApp_` method in `CustomWindow` to accept and store the `AQIApp` instance.
+3. Updated `windowWillClose_` method to reset the `custom_window` property of `AQIApp` to `None` when the window closes.
+4. Modified `show_details` method in `AQIApp` to pass `self` to `CustomWindow`'s `showWindow_withText_andApp_` method.
+
+### Technical Impact
+These changes ensured proper cleanup of references when the Details window was closed, preventing the use of stale or invalid window objects on subsequent openings.
+
+## Issue 2: Details Window Not Closing Properly
+
+### Problem
+The Details Custom Window required multiple clicks on the close button to actually close, indicating improper event handling for window closure.
+
+### Root Cause
+The window closure event was not being handled correctly, likely due to improper delegation or event method implementation.
+
+### Solution
+1. Removed the separate `CustomWindowDelegate` class.
+2. Made `CustomWindow` class the delegate of its own window.
+3. Implemented `windowShouldClose_` method directly in `CustomWindow` class.
+4. In `windowShouldClose_`, added logic to call `self.closeWindow()`, update `AQIApp`'s `custom_window` property, and return `True`.
+
+### Technical Impact
+This restructuring ensured that window close events were properly captured and handled, leading to immediate and correct window closure behavior.
+
+## Key Learnings
+
+1. **Object Lifecycle Management**: Proper management of object lifecycles, especially in a mixed Python/Objective-C environment, is crucial for preventing crashes and memory leaks.
+
+2. **Delegation Patterns**: Understanding and correctly implementing delegation patterns in PyObjC is essential for proper event handling in macOS applications.
+
+3. **Window Management**: Careful management of window objects and their associated controllers is necessary to prevent issues with reopening closed windows.
+
+4. **Event Handling**: Using the correct methods (e.g., `windowShouldClose_` instead of `windowWillClose_`) is crucial for proper event sequencing and handling.
+
+5. **Reference Management**: Maintaining and clearing references appropriately between different components of the application (e.g., between `AQIApp` and `CustomWindow`) is essential for preventing stale references and associated crashes.
+
+This diagnosis highlights the importance of understanding the intricacies of PyObjC and macOS application architecture when developing Python-based macOS applications.
+
+___________________________________________________
+
+
+# Technical Summary: Search City Window Issue and Fix
+
+## Issue
+
+The Search City window was encountering two main problems:
+
+1. An initial error when opening the window: `TypeError: object of type 'NoneType' has no len()`
+2. The search table was not visible when the window did open successfully
+
+## Root Cause
+
+1. The `self.results` attribute in the `SearchCityWindow` class was not properly initialized. It was likely `None` when the window was first created, causing the `len()` function to fail when trying to determine the number of rows for the table view.
+
+2. The search table's visibility issue was likely due to improper sizing or positioning within the window.
+
+## Solution
+
+The fix addressed these issues through several key changes:
+
+1. Proper initialization of `self.results`:
+   ```python
+   def initWithApp_(self, app):
+       # ...
+       self.results = []  # Initialize as an empty list
+       # ...
+   ```
+
+2. Defensive programming in table view methods:
+   ```python
+   def numberOfRowsInTableView_(self, tableView):
+       return len(self.results) if self.results else 0
+
+   def tableView_objectValueForTableColumn_row_(self, tableView, column, row):
+       if not self.results or row < 0 or row >= len(self.results):
+           return None
+       # ...
+   ```
+
+3. Adjusted sizing and positioning of the search table:
+   ```python
+   scrollView = NSScrollView.alloc().initWithFrame_(NSMakeRect(20, 20, 560, 220))
+   ```
+
+## Technical Explanation
+
+1. **Initialization**: By initializing `self.results` as an empty list in the `initWithApp_` method, we ensure that it always has a valid list object. This prevents the `TypeError` when `len()` is called on `self.results`.
+
+2. **Defensive Programming**: The checks in `numberOfRowsInTableView_` and `tableView_objectValueForTableColumn_row_` methods protect against potential edge cases where `self.results` might be empty or `None`, or when trying to access out-of-range indices. This makes the code more robust and less prone to crashes.
+
+3. **UI Adjustment**: Increasing the size of the scroll view that contains the table ensures that the table is visible and properly sized within the window. This addresses the visibility issue of the search table.
+
+4. **Simplified Window Management**: In the `OpenAir` class, the `search_city` method was simplified to create a new `SearchCityWindow` instance only if it doesn't exist, and then show the window. This ensures that we're not creating multiple instances unnecessarily and helps manage the window's lifecycle more effectively.
+
+## Impact of the Fix
+
+1. **Stability**: The application no longer crashes when opening the Search City window due to `NoneType` errors.
+2. **Functionality**: The search table is now visible and properly sized within the window.
+3. **User Experience**: Users can now successfully open the Search City window, perform searches, and see results without encountering errors or missing UI elements.
+
+## Lessons Learned
+
+1. **Proper Initialization**: Always initialize attributes, especially collections, to valid empty states rather than leaving them as `None`.
+2. **Defensive Programming**: Implement checks to handle potential edge cases, especially when dealing with collections and indices.
+3. **UI Testing**: Thoroughly test UI elements for proper sizing and visibility across different scenarios.
+4. **Error Handling**: Implement proper error handling and logging to catch and diagnose issues early in the development process.
+
+This fix demonstrates the importance of careful attribute management, robust error handling, and thorough UI testing in developing stable and user-friendly applications.
