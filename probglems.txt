@@ -562,3 +562,32 @@ Lessons Learned:
 3. Separating window management (in DetailWindow) from content rendering (in AQIVisualizationView) allows for more flexible and maintainable code.
 
 This solution demonstrates the importance of thorough window and view management in PyObjC applications, especially when dealing with dynamic sizing and custom visualizations.
+
+
+___________________________________________________
+
+Initial Problem:
+The "Done" button in the DetailWindow wasn't closing the window when clicked.
+Attempted Solutions:
+a. We first tried to modify the closeWindow_ method to ensure it was properly handling the window closing process.
+b. We added extensive logging to track the method calls and window states.
+c. We adjusted the method signature and removed the @objc.python_method decorator to make it accessible to Objective-C.
+Key Changes:
+a. Method Naming: We ensured that the closeWindow_ method name ended with an underscore, following the Objective-C to Python naming convention for methods with a single parameter.
+b. Action Connection: We changed how the button's action was set from using objc.selector("closeWindow:", signature=b"v@:") to directly setting the method: self.done_button.setAction_(self.closeWindow_).
+c. Decorator Removal: We removed the @objc.python_method decorator from the closeWindow_ method to make it accessible as an Objective-C selector.
+Final Working Solution:
+The solution that worked involved:
+Keeping the closeWindow_ method name with the trailing underscore.
+Removing the @objc.python_method decorator from closeWindow_.
+Setting the button's action directly to the method: self.done_button.setAction_(self.closeWindow_).
+Ensuring the closeWindow_ method properly handled the window closing process, including stopping any modal sessions and updating the application's windows.
+Why It Worked:
+By removing the @objc.python_method decorator, we allowed the method to be exposed to Objective-C, making it callable as a selector.
+Directly setting the action to self.closeWindow_ ensured that the correct method was being called when the button was clicked.
+The proper naming convention (closeWindow_ with an underscore) allowed for correct method resolution in the Objective-C runtime.
+Lessons Learned:
+The importance of proper method naming and decoration when working with PyObjC.
+The value of detailed logging in diagnosing issues with GUI applications.
+The need to understand the intricacies of how Python methods are exposed to Objective-C when using PyObjC.
+This experience highlights the sometimes subtle interactions between Python and Objective-C in PyObjC applications, and the importance of adhering to naming conventions and proper method exposure when bridging between the two languages.

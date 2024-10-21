@@ -152,7 +152,7 @@ class AQIVisualizationView(NSView):
         
         # Metric name and current value
         current_value = self.data.get('iaqi', {}).get(metric, {}).get('v', 'N/A')
-        metric_label = f"{metric.upper()}: Current {current_value}"
+        metric_label = f"{metric.upper()}: {current_value}"
         NSString.stringWithString_(metric_label).drawAtPoint_withAttributes_(
             NSMakePoint(5, rect.origin.y + rect.size.height - 20), attrs)
         

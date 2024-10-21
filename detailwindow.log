@@ -1,0 +1,1178 @@
+2024-10-21 15:49:05,407 - DEBUG - Starting new HTTPS connection (1): api.ipify.org:443
+2024-10-21 15:49:05,555 - DEBUG - https://api.ipify.org:443 "GET /?format=json HTTP/11" 200 22
+2024-10-21 15:49:05,556 - DEBUG - Starting new HTTPS connection (1): api.waqi.info:443
+2024-10-21 15:49:06,322 - DEBUG - https://api.waqi.info:443 "GET /feed/here/?token=09975e52f3b1bf07469353eabdeb513092b85f9d HTTP/11" 200 None
+2024-10-21 15:49:06,397 - INFO - Update method called. Current city: 25.795;-80.216
+2024-10-21 15:49:06,397 - INFO - Time since last update: 1729540146.397313 seconds
+2024-10-21 15:49:06,397 - INFO - Updating data for 25.795;-80.216
+2024-10-21 15:49:06,397 - INFO - get_aqi_data called with location: 25.795;-80.216
+2024-10-21 15:49:06,397 - INFO - Using city-based URL: https://api.waqi.info/feed/geo:25.795;-80.216/?token=09975e52f3b1bf07469353eabdeb513092b85f9d
+2024-10-21 15:49:06,397 - INFO - Sending GET request to: https://api.waqi.info/feed/geo:25.795;-80.216/?token=09975e52f3b1bf07469353eabdeb513092b85f9d
+2024-10-21 15:49:06,398 - DEBUG - Starting new HTTPS connection (1): api.waqi.info:443
+2024-10-21 15:49:07,162 - DEBUG - https://api.waqi.info:443 "GET /feed/geo:25.795;-80.216/?token=09975e52f3b1bf07469353eabdeb513092b85f9d HTTP/11" 200 None
+2024-10-21 15:49:07,163 - INFO - Received response with status code: 200
+2024-10-21 15:49:07,163 - INFO - Parsed JSON response: {
+  "status": "ok",
+  "data": {
+    "aqi": 33,
+    "idx": 6298,
+    "attributions": [
+      {
+        "url": "https://floridadep.gov/air/",
+        "name": "Florida Department of Environmental Protection",
+        "logo": "USA.Florida.png"
+      },
+      {
+        "url": "http://www.airnow.gov/",
+        "name": "Air Now - US EPA"
+      },
+      {
+        "url": "https://waqi.info/",
+        "name": "World Air Quality Index Project"
+      }
+    ],
+    "city": {
+      "geo": [
+        25.794722222222,
+        -80.215555555556
+      ],
+      "name": "Miami Fire Station - Station #5, Miami-Dade, Florida, USA",
+      "url": "https://aqicn.org/city/usa/florida/miami-dade/miami-fire-station-station--5",
+      "location": ""
+    },
+    "dominentpol": "pm25",
+    "iaqi": {
+      "co": {
+        "v": 1
+      },
+      "dew": {
+        "v": 21
+      },
+      "h": {
+        "v": 62
+      },
+      "o3": {
+        "v": 13
+      },
+      "p": {
+        "v": 1013.8
+      },
+      "pm10": {
+        "v": 32
+      },
+      "pm25": {
+        "v": 33
+      },
+      "so2": {
+        "v": 0.5
+      },
+      "t": {
+        "v": 29
+      },
+      "w": {
+        "v": 6.1
+      },
+      "wg": {
+        "v": 10.2
+      }
+    },
+    "time": {
+      "s": "2024-10-21 14:00:00",
+      "tz": "-06:00",
+      "v": 1729519200,
+      "iso": "2024-10-21T14:00:00-06:00"
+    },
+    "forecast": {
+      "daily": {
+        "o3": [
+          {
+            "avg": 19,
+            "day": "2024-10-19",
+            "max": 22,
+            "min": 17
+          },
+          {
+            "avg": 18,
+            "day": "2024-10-20",
+            "max": 22,
+            "min": 16
+          },
+          {
+            "avg": 16,
+            "day": "2024-10-21",
+            "max": 18,
+            "min": 14
+          },
+          {
+            "avg": 16,
+            "day": "2024-10-22",
+            "max": 18,
+            "min": 14
+          },
+          {
+            "avg": 15,
+            "day": "2024-10-23",
+            "max": 21,
+            "min": 10
+          },
+          {
+            "avg": 12,
+            "day": "2024-10-24",
+            "max": 21,
+            "min": 4
+          },
+          {
+            "avg": 18,
+            "day": "2024-10-25",
+            "max": 22,
+            "min": 14
+          }
+        ],
+        "pm10": [
+          {
+            "avg": 15,
+            "day": "2024-10-19",
+            "max": 21,
+            "min": 6
+          },
+          {
+            "avg": 6,
+            "day": "2024-10-20",
+            "max": 19,
+            "min": 4
+          },
+          {
+            "avg": 7,
+            "day": "2024-10-21",
+            "max": 9,
+            "min": 4
+          },
+          {
+            "avg": 7,
+            "day": "2024-10-22",
+            "max": 10,
+            "min": 6
+          },
+          {
+            "avg": 13,
+            "day": "2024-10-23",
+            "max": 16,
+            "min": 7
+          },
+          {
+            "avg": 7,
+            "day": "2024-10-24",
+            "max": 11,
+            "min": 3
+          },
+          {
+            "avg": 5,
+            "day": "2024-10-25",
+            "max": 6,
+            "min": 4
+          }
+        ],
+        "pm25": [
+          {
+            "avg": 19,
+            "day": "2024-10-19",
+            "max": 23,
+            "min": 15
+          },
+          {
+            "avg": 8,
+            "day": "2024-10-20",
+            "max": 18,
+            "min": 4
+          },
+          {
+            "avg": 10,
+            "day": "2024-10-21",
+            "max": 12,
+            "min": 8
+          },
+          {
+            "avg": 11,
+            "day": "2024-10-22",
+            "max": 13,
+            "min": 10
+          },
+          {
+            "avg": 16,
+            "day": "2024-10-23",
+            "max": 21,
+            "min": 9
+          },
+          {
+            "avg": 14,
+            "day": "2024-10-24",
+            "max": 22,
+            "min": 5
+          },
+          {
+            "avg": 8,
+            "day": "2024-10-25",
+            "max": 10,
+            "min": 5
+          }
+        ],
+        "uvi": [
+          {
+            "avg": 0,
+            "day": "2024-10-20",
+            "max": 0,
+            "min": 0
+          },
+          {
+            "avg": 2,
+            "day": "2024-10-21",
+            "max": 7,
+            "min": 0
+          },
+          {
+            "avg": 2,
+            "day": "2024-10-22",
+            "max": 6,
+            "min": 0
+          },
+          {
+            "avg": 2,
+            "day": "2024-10-23",
+            "max": 7,
+            "min": 0
+          },
+          {
+            "avg": 2,
+            "day": "2024-10-24",
+            "max": 7,
+            "min": 0
+          },
+          {
+            "avg": 2,
+            "day": "2024-10-25",
+            "max": 6,
+            "min": 0
+          }
+        ]
+      }
+    },
+    "debug": {
+      "sync": "2024-10-22T04:42:20+09:00"
+    }
+  }
+}
+2024-10-21 15:49:07,163 - INFO - Successfully retrieved data for 25.795;-80.216
+2024-10-21 15:49:07,163 - INFO - Data update successful, updating title
+2024-10-21 15:49:07,217 - INFO - Update method called. Current city: 25.795;-80.216
+2024-10-21 15:49:07,217 - INFO - Time since last update: 0.8199307918548584 seconds
+2024-10-21 15:49:07,217 - INFO - Using cached data
+2024-10-21 15:49:07,217 - INFO - Data update successful, updating title
+2024-10-21 15:49:09,538 - INFO - Showing DetailWindow with title: AQI Details
+2024-10-21 15:49:21,020 - INFO - windowWillClose_ method called
+2024-10-21 15:49:21,021 - DEBUG - Window set to None in windowWillClose_
+2024-10-21 15:49:25,335 - DEBUG - Starting new HTTPS connection (1): api.ipify.org:443
+2024-10-21 15:49:25,505 - DEBUG - https://api.ipify.org:443 "GET /?format=json HTTP/11" 200 22
+2024-10-21 15:49:25,506 - DEBUG - Starting new HTTPS connection (1): api.waqi.info:443
+2024-10-21 15:49:26,527 - DEBUG - https://api.waqi.info:443 "GET /feed/here/?token=09975e52f3b1bf07469353eabdeb513092b85f9d HTTP/11" 200 None
+2024-10-21 15:49:26,574 - INFO - Update method called. Current city: 25.795;-80.216
+2024-10-21 15:49:26,575 - INFO - Time since last update: 1729540166.574943 seconds
+2024-10-21 15:49:26,575 - INFO - Updating data for 25.795;-80.216
+2024-10-21 15:49:26,575 - INFO - get_aqi_data called with location: 25.795;-80.216
+2024-10-21 15:49:26,575 - INFO - Using city-based URL: https://api.waqi.info/feed/geo:25.795;-80.216/?token=09975e52f3b1bf07469353eabdeb513092b85f9d
+2024-10-21 15:49:26,575 - INFO - Sending GET request to: https://api.waqi.info/feed/geo:25.795;-80.216/?token=09975e52f3b1bf07469353eabdeb513092b85f9d
+2024-10-21 15:49:26,575 - DEBUG - Starting new HTTPS connection (1): api.waqi.info:443
+2024-10-21 15:49:27,480 - DEBUG - https://api.waqi.info:443 "GET /feed/geo:25.795;-80.216/?token=09975e52f3b1bf07469353eabdeb513092b85f9d HTTP/11" 200 None
+2024-10-21 15:49:27,482 - INFO - Received response with status code: 200
+2024-10-21 15:49:27,483 - INFO - Parsed JSON response: {
+  "status": "ok",
+  "data": {
+    "aqi": 33,
+    "idx": 6298,
+    "attributions": [
+      {
+        "url": "https://floridadep.gov/air/",
+        "name": "Florida Department of Environmental Protection",
+        "logo": "USA.Florida.png"
+      },
+      {
+        "url": "http://www.airnow.gov/",
+        "name": "Air Now - US EPA"
+      },
+      {
+        "url": "https://waqi.info/",
+        "name": "World Air Quality Index Project"
+      }
+    ],
+    "city": {
+      "geo": [
+        25.794722222222,
+        -80.215555555556
+      ],
+      "name": "Miami Fire Station - Station #5, Miami-Dade, Florida, USA",
+      "url": "https://aqicn.org/city/usa/florida/miami-dade/miami-fire-station-station--5",
+      "location": ""
+    },
+    "dominentpol": "pm25",
+    "iaqi": {
+      "co": {
+        "v": 1
+      },
+      "dew": {
+        "v": 21
+      },
+      "h": {
+        "v": 62
+      },
+      "o3": {
+        "v": 13
+      },
+      "p": {
+        "v": 1013.8
+      },
+      "pm10": {
+        "v": 32
+      },
+      "pm25": {
+        "v": 33
+      },
+      "so2": {
+        "v": 0.5
+      },
+      "t": {
+        "v": 29
+      },
+      "w": {
+        "v": 6.1
+      },
+      "wg": {
+        "v": 10.2
+      }
+    },
+    "time": {
+      "s": "2024-10-21 14:00:00",
+      "tz": "-06:00",
+      "v": 1729519200,
+      "iso": "2024-10-21T14:00:00-06:00"
+    },
+    "forecast": {
+      "daily": {
+        "o3": [
+          {
+            "avg": 19,
+            "day": "2024-10-19",
+            "max": 22,
+            "min": 17
+          },
+          {
+            "avg": 18,
+            "day": "2024-10-20",
+            "max": 22,
+            "min": 16
+          },
+          {
+            "avg": 16,
+            "day": "2024-10-21",
+            "max": 18,
+            "min": 14
+          },
+          {
+            "avg": 16,
+            "day": "2024-10-22",
+            "max": 18,
+            "min": 14
+          },
+          {
+            "avg": 15,
+            "day": "2024-10-23",
+            "max": 21,
+            "min": 10
+          },
+          {
+            "avg": 12,
+            "day": "2024-10-24",
+            "max": 21,
+            "min": 4
+          },
+          {
+            "avg": 18,
+            "day": "2024-10-25",
+            "max": 22,
+            "min": 14
+          }
+        ],
+        "pm10": [
+          {
+            "avg": 15,
+            "day": "2024-10-19",
+            "max": 21,
+            "min": 6
+          },
+          {
+            "avg": 6,
+            "day": "2024-10-20",
+            "max": 19,
+            "min": 4
+          },
+          {
+            "avg": 7,
+            "day": "2024-10-21",
+            "max": 9,
+            "min": 4
+          },
+          {
+            "avg": 7,
+            "day": "2024-10-22",
+            "max": 10,
+            "min": 6
+          },
+          {
+            "avg": 13,
+            "day": "2024-10-23",
+            "max": 16,
+            "min": 7
+          },
+          {
+            "avg": 7,
+            "day": "2024-10-24",
+            "max": 11,
+            "min": 3
+          },
+          {
+            "avg": 5,
+            "day": "2024-10-25",
+            "max": 6,
+            "min": 4
+          }
+        ],
+        "pm25": [
+          {
+            "avg": 19,
+            "day": "2024-10-19",
+            "max": 23,
+            "min": 15
+          },
+          {
+            "avg": 8,
+            "day": "2024-10-20",
+            "max": 18,
+            "min": 4
+          },
+          {
+            "avg": 10,
+            "day": "2024-10-21",
+            "max": 12,
+            "min": 8
+          },
+          {
+            "avg": 11,
+            "day": "2024-10-22",
+            "max": 13,
+            "min": 10
+          },
+          {
+            "avg": 16,
+            "day": "2024-10-23",
+            "max": 21,
+            "min": 9
+          },
+          {
+            "avg": 14,
+            "day": "2024-10-24",
+            "max": 22,
+            "min": 5
+          },
+          {
+            "avg": 8,
+            "day": "2024-10-25",
+            "max": 10,
+            "min": 5
+          }
+        ],
+        "uvi": [
+          {
+            "avg": 0,
+            "day": "2024-10-20",
+            "max": 0,
+            "min": 0
+          },
+          {
+            "avg": 2,
+            "day": "2024-10-21",
+            "max": 7,
+            "min": 0
+          },
+          {
+            "avg": 2,
+            "day": "2024-10-22",
+            "max": 6,
+            "min": 0
+          },
+          {
+            "avg": 2,
+            "day": "2024-10-23",
+            "max": 7,
+            "min": 0
+          },
+          {
+            "avg": 2,
+            "day": "2024-10-24",
+            "max": 7,
+            "min": 0
+          },
+          {
+            "avg": 2,
+            "day": "2024-10-25",
+            "max": 6,
+            "min": 0
+          }
+        ]
+      }
+    },
+    "debug": {
+      "sync": "2024-10-22T04:42:20+09:00"
+    }
+  }
+}
+2024-10-21 15:49:27,483 - INFO - Successfully retrieved data for 25.795;-80.216
+2024-10-21 15:49:27,484 - INFO - Data update successful, updating title
+2024-10-21 15:49:27,576 - INFO - Update method called. Current city: 25.795;-80.216
+2024-10-21 15:49:27,576 - INFO - Time since last update: 1.0014798641204834 seconds
+2024-10-21 15:49:27,576 - INFO - Using cached data
+2024-10-21 15:49:27,576 - INFO - Data update successful, updating title
+2024-10-21 15:49:31,431 - INFO - Showing DetailWindow with title: AQI Details
+2024-10-21 15:50:45,996 - INFO - windowWillClose_ method called
+2024-10-21 15:50:45,996 - DEBUG - Window set to None in windowWillClose_
+2024-10-21 15:50:48,196 - DEBUG - Starting new HTTPS connection (1): api.ipify.org:443
+2024-10-21 15:50:48,483 - DEBUG - https://api.ipify.org:443 "GET /?format=json HTTP/11" 200 22
+2024-10-21 15:50:48,487 - DEBUG - Starting new HTTPS connection (1): api.waqi.info:443
+2024-10-21 15:50:49,573 - DEBUG - https://api.waqi.info:443 "GET /feed/here/?token=09975e52f3b1bf07469353eabdeb513092b85f9d HTTP/11" 200 None
+2024-10-21 15:50:49,670 - INFO - Update method called. Current city: 25.795;-80.216
+2024-10-21 15:50:49,670 - INFO - Time since last update: 1729540249.670361 seconds
+2024-10-21 15:50:49,670 - INFO - Updating data for 25.795;-80.216
+2024-10-21 15:50:49,670 - INFO - get_aqi_data called with location: 25.795;-80.216
+2024-10-21 15:50:49,670 - INFO - Using city-based URL: https://api.waqi.info/feed/geo:25.795;-80.216/?token=09975e52f3b1bf07469353eabdeb513092b85f9d
+2024-10-21 15:50:49,670 - INFO - Sending GET request to: https://api.waqi.info/feed/geo:25.795;-80.216/?token=09975e52f3b1bf07469353eabdeb513092b85f9d
+2024-10-21 15:50:49,671 - DEBUG - Starting new HTTPS connection (1): api.waqi.info:443
+2024-10-21 15:50:50,700 - DEBUG - https://api.waqi.info:443 "GET /feed/geo:25.795;-80.216/?token=09975e52f3b1bf07469353eabdeb513092b85f9d HTTP/11" 200 None
+2024-10-21 15:50:50,701 - INFO - Received response with status code: 200
+2024-10-21 15:50:50,701 - INFO - Parsed JSON response: {
+  "status": "ok",
+  "data": {
+    "aqi": 33,
+    "idx": 6298,
+    "attributions": [
+      {
+        "url": "https://floridadep.gov/air/",
+        "name": "Florida Department of Environmental Protection",
+        "logo": "USA.Florida.png"
+      },
+      {
+        "url": "http://www.airnow.gov/",
+        "name": "Air Now - US EPA"
+      },
+      {
+        "url": "https://waqi.info/",
+        "name": "World Air Quality Index Project"
+      }
+    ],
+    "city": {
+      "geo": [
+        25.794722222222,
+        -80.215555555556
+      ],
+      "name": "Miami Fire Station - Station #5, Miami-Dade, Florida, USA",
+      "url": "https://aqicn.org/city/usa/florida/miami-dade/miami-fire-station-station--5",
+      "location": ""
+    },
+    "dominentpol": "pm25",
+    "iaqi": {
+      "co": {
+        "v": 1
+      },
+      "dew": {
+        "v": 21
+      },
+      "h": {
+        "v": 62
+      },
+      "o3": {
+        "v": 13
+      },
+      "p": {
+        "v": 1013.8
+      },
+      "pm10": {
+        "v": 32
+      },
+      "pm25": {
+        "v": 33
+      },
+      "so2": {
+        "v": 0.5
+      },
+      "t": {
+        "v": 29
+      },
+      "w": {
+        "v": 6.1
+      },
+      "wg": {
+        "v": 10.2
+      }
+    },
+    "time": {
+      "s": "2024-10-21 14:00:00",
+      "tz": "-06:00",
+      "v": 1729519200,
+      "iso": "2024-10-21T14:00:00-06:00"
+    },
+    "forecast": {
+      "daily": {
+        "o3": [
+          {
+            "avg": 19,
+            "day": "2024-10-19",
+            "max": 22,
+            "min": 17
+          },
+          {
+            "avg": 18,
+            "day": "2024-10-20",
+            "max": 22,
+            "min": 16
+          },
+          {
+            "avg": 16,
+            "day": "2024-10-21",
+            "max": 18,
+            "min": 14
+          },
+          {
+            "avg": 16,
+            "day": "2024-10-22",
+            "max": 18,
+            "min": 14
+          },
+          {
+            "avg": 15,
+            "day": "2024-10-23",
+            "max": 21,
+            "min": 10
+          },
+          {
+            "avg": 12,
+            "day": "2024-10-24",
+            "max": 21,
+            "min": 4
+          },
+          {
+            "avg": 18,
+            "day": "2024-10-25",
+            "max": 22,
+            "min": 14
+          }
+        ],
+        "pm10": [
+          {
+            "avg": 15,
+            "day": "2024-10-19",
+            "max": 21,
+            "min": 6
+          },
+          {
+            "avg": 6,
+            "day": "2024-10-20",
+            "max": 19,
+            "min": 4
+          },
+          {
+            "avg": 7,
+            "day": "2024-10-21",
+            "max": 9,
+            "min": 4
+          },
+          {
+            "avg": 7,
+            "day": "2024-10-22",
+            "max": 10,
+            "min": 6
+          },
+          {
+            "avg": 13,
+            "day": "2024-10-23",
+            "max": 16,
+            "min": 7
+          },
+          {
+            "avg": 7,
+            "day": "2024-10-24",
+            "max": 11,
+            "min": 3
+          },
+          {
+            "avg": 5,
+            "day": "2024-10-25",
+            "max": 6,
+            "min": 4
+          }
+        ],
+        "pm25": [
+          {
+            "avg": 19,
+            "day": "2024-10-19",
+            "max": 23,
+            "min": 15
+          },
+          {
+            "avg": 8,
+            "day": "2024-10-20",
+            "max": 18,
+            "min": 4
+          },
+          {
+            "avg": 10,
+            "day": "2024-10-21",
+            "max": 12,
+            "min": 8
+          },
+          {
+            "avg": 11,
+            "day": "2024-10-22",
+            "max": 13,
+            "min": 10
+          },
+          {
+            "avg": 16,
+            "day": "2024-10-23",
+            "max": 21,
+            "min": 9
+          },
+          {
+            "avg": 14,
+            "day": "2024-10-24",
+            "max": 22,
+            "min": 5
+          },
+          {
+            "avg": 8,
+            "day": "2024-10-25",
+            "max": 10,
+            "min": 5
+          }
+        ],
+        "uvi": [
+          {
+            "avg": 0,
+            "day": "2024-10-20",
+            "max": 0,
+            "min": 0
+          },
+          {
+            "avg": 2,
+            "day": "2024-10-21",
+            "max": 7,
+            "min": 0
+          },
+          {
+            "avg": 2,
+            "day": "2024-10-22",
+            "max": 6,
+            "min": 0
+          },
+          {
+            "avg": 2,
+            "day": "2024-10-23",
+            "max": 7,
+            "min": 0
+          },
+          {
+            "avg": 2,
+            "day": "2024-10-24",
+            "max": 7,
+            "min": 0
+          },
+          {
+            "avg": 2,
+            "day": "2024-10-25",
+            "max": 6,
+            "min": 0
+          }
+        ]
+      }
+    },
+    "debug": {
+      "sync": "2024-10-22T04:42:20+09:00"
+    }
+  }
+}
+2024-10-21 15:50:50,701 - INFO - Successfully retrieved data for 25.795;-80.216
+2024-10-21 15:50:50,702 - INFO - Data update successful, updating title
+2024-10-21 15:50:50,776 - INFO - Update method called. Current city: 25.795;-80.216
+2024-10-21 15:50:50,776 - INFO - Time since last update: 1.106292963027954 seconds
+2024-10-21 15:50:50,776 - INFO - Using cached data
+2024-10-21 15:50:50,776 - INFO - Data update successful, updating title
+2024-10-21 15:50:53,126 - INFO - Showing DetailWindow with title: AQI Details
+2024-10-21 15:50:53,145 - DEBUG - Done button added to DetailWindow with action: closeWindow:
+2024-10-21 15:50:53,145 - DEBUG - Done button target: <DetailWindow: 0x118009200>
+2024-10-21 15:50:53,184 - INFO - Window did become key
+2024-10-21 15:50:54,369 - INFO - closeWindow: method called
+2024-10-21 15:50:54,372 - INFO - Window did resign key
+2024-10-21 15:50:54,397 - INFO - windowWillClose_ method called
+2024-10-21 15:50:54,397 - DEBUG - Window set to None in windowWillClose_
+2024-10-21 15:50:54,398 - INFO - Window closed successfully
+2024-10-21 15:50:56,153 - INFO - Showing DetailWindow with title: AQI Details
+2024-10-21 15:50:56,164 - DEBUG - Done button added to DetailWindow with action: closeWindow:
+2024-10-21 15:50:56,164 - DEBUG - Done button target: <DetailWindow: 0x118009200>
+2024-10-21 15:50:56,164 - INFO - Window did become key
+2024-10-21 15:50:58,416 - INFO - closeWindow: method called
+2024-10-21 15:50:58,418 - INFO - Window did resign key
+2024-10-21 15:50:58,420 - INFO - windowWillClose_ method called
+2024-10-21 15:50:58,421 - DEBUG - Window set to None in windowWillClose_
+2024-10-21 15:50:58,421 - INFO - Window closed successfully
+2024-10-21 15:51:18,309 - INFO - Showing DetailWindow with title: AQI Details
+2024-10-21 15:51:18,314 - DEBUG - Done button added to DetailWindow with action: closeWindow:
+2024-10-21 15:51:18,314 - DEBUG - Done button target: <DetailWindow: 0x118009200>
+2024-10-21 15:51:18,348 - INFO - Window did become key
+2024-10-21 15:51:19,349 - INFO - windowShouldClose_ called for window: <NSWindow: 0x10da4ce80>
+2024-10-21 15:51:19,349 - INFO - windowWillClose_ method called
+2024-10-21 15:51:19,349 - DEBUG - Window set to None in windowWillClose_
+2024-10-21 15:51:19,352 - INFO - Window did resign key
+2024-10-21 15:51:20,940 - INFO - Showing DetailWindow with title: AQI Details
+2024-10-21 15:51:20,946 - DEBUG - Done button added to DetailWindow with action: closeWindow:
+2024-10-21 15:51:20,946 - DEBUG - Done button target: <DetailWindow: 0x118009200>
+2024-10-21 15:51:20,946 - INFO - Window did become key
+2024-10-21 15:51:21,751 - INFO - closeWindow: method called
+2024-10-21 15:51:21,754 - INFO - Window did resign key
+2024-10-21 15:51:21,756 - INFO - windowWillClose_ method called
+2024-10-21 15:51:21,757 - DEBUG - Window set to None in windowWillClose_
+2024-10-21 15:51:21,758 - INFO - Window closed successfully
+2024-10-21 15:52:17,781 - INFO - Showing DetailWindow with title: AQI Details
+2024-10-21 15:52:17,791 - DEBUG - Done button added to DetailWindow with action: closeWindow:
+2024-10-21 15:52:17,791 - DEBUG - Done button target: <DetailWindow: 0x118009200>
+2024-10-21 15:52:17,791 - INFO - Window did become key
+2024-10-21 15:53:43,210 - INFO - closeWindow: method called
+2024-10-21 15:53:43,213 - INFO - Window did resign key
+2024-10-21 15:53:43,215 - INFO - windowWillClose_ method called
+2024-10-21 15:53:43,215 - DEBUG - Window set to None in windowWillClose_
+2024-10-21 15:53:43,216 - INFO - Window closed successfully
+2024-10-21 15:55:04,807 - INFO - Showing DetailWindow with title: AQI Details
+2024-10-21 15:55:04,816 - DEBUG - Done button added to DetailWindow with action: closeWindow:
+2024-10-21 15:55:04,816 - DEBUG - Done button target: <DetailWindow: 0x118009200>
+2024-10-21 15:55:04,836 - INFO - Window did become key
+2024-10-21 15:55:05,718 - INFO - closeWindow: method called
+2024-10-21 15:55:05,721 - INFO - Window did resign key
+2024-10-21 15:55:05,723 - INFO - windowWillClose_ method called
+2024-10-21 15:55:05,723 - DEBUG - Window set to None in windowWillClose_
+2024-10-21 15:55:05,724 - INFO - Window closed successfully
+2024-10-21 15:55:07,534 - INFO - Showing DetailWindow with title: AQI Details
+2024-10-21 15:55:07,542 - DEBUG - Done button added to DetailWindow with action: closeWindow:
+2024-10-21 15:55:07,542 - DEBUG - Done button target: <DetailWindow: 0x118009200>
+2024-10-21 15:55:07,542 - INFO - Window did become key
+2024-10-21 15:55:12,300 - INFO - Window did resign key
+2024-10-21 15:55:46,757 - INFO - Window did become key
+2024-10-21 15:55:53,852 - INFO - Window did resign key
+2024-10-21 15:55:57,455 - INFO - Window did become key
+2024-10-21 15:56:18,622 - INFO - Window did resign key
+2024-10-21 15:56:36,608 - INFO - Window did become key
+2024-10-21 15:56:37,257 - INFO - closeWindow: method called
+2024-10-21 15:56:37,260 - INFO - Window did resign key
+2024-10-21 15:56:37,262 - INFO - windowWillClose_ method called
+2024-10-21 15:56:37,262 - DEBUG - Window set to None in windowWillClose_
+2024-10-21 15:56:37,263 - INFO - Window closed successfully
+2024-10-21 15:56:40,560 - DEBUG - Starting new HTTPS connection (1): api.ipify.org:443
+2024-10-21 15:56:40,781 - DEBUG - https://api.ipify.org:443 "GET /?format=json HTTP/11" 200 22
+2024-10-21 15:56:40,783 - DEBUG - Starting new HTTPS connection (1): api.waqi.info:443
+2024-10-21 15:56:41,586 - DEBUG - https://api.waqi.info:443 "GET /feed/here/?token=09975e52f3b1bf07469353eabdeb513092b85f9d HTTP/11" 200 None
+2024-10-21 15:56:41,633 - INFO - Update method called. Current city: 25.795;-80.216
+2024-10-21 15:56:41,633 - INFO - Time since last update: 1729540601.633798 seconds
+2024-10-21 15:56:41,633 - INFO - Updating data for 25.795;-80.216
+2024-10-21 15:56:41,633 - INFO - get_aqi_data called with location: 25.795;-80.216
+2024-10-21 15:56:41,634 - INFO - Using city-based URL: https://api.waqi.info/feed/geo:25.795;-80.216/?token=09975e52f3b1bf07469353eabdeb513092b85f9d
+2024-10-21 15:56:41,634 - INFO - Sending GET request to: https://api.waqi.info/feed/geo:25.795;-80.216/?token=09975e52f3b1bf07469353eabdeb513092b85f9d
+2024-10-21 15:56:41,634 - DEBUG - Starting new HTTPS connection (1): api.waqi.info:443
+2024-10-21 15:56:43,771 - DEBUG - https://api.waqi.info:443 "GET /feed/geo:25.795;-80.216/?token=09975e52f3b1bf07469353eabdeb513092b85f9d HTTP/11" 200 None
+2024-10-21 15:56:43,772 - INFO - Received response with status code: 200
+2024-10-21 15:56:43,774 - INFO - Parsed JSON response: {
+  "status": "ok",
+  "data": {
+    "aqi": 33,
+    "idx": 6298,
+    "attributions": [
+      {
+        "url": "https://floridadep.gov/air/",
+        "name": "Florida Department of Environmental Protection",
+        "logo": "USA.Florida.png"
+      },
+      {
+        "url": "http://www.airnow.gov/",
+        "name": "Air Now - US EPA"
+      },
+      {
+        "url": "https://waqi.info/",
+        "name": "World Air Quality Index Project"
+      }
+    ],
+    "city": {
+      "geo": [
+        25.794722222222,
+        -80.215555555556
+      ],
+      "name": "Miami Fire Station - Station #5, Miami-Dade, Florida, USA",
+      "url": "https://aqicn.org/city/usa/florida/miami-dade/miami-fire-station-station--5",
+      "location": ""
+    },
+    "dominentpol": "pm25",
+    "iaqi": {
+      "co": {
+        "v": 1
+      },
+      "dew": {
+        "v": 21
+      },
+      "h": {
+        "v": 62
+      },
+      "o3": {
+        "v": 13
+      },
+      "p": {
+        "v": 1013.8
+      },
+      "pm10": {
+        "v": 32
+      },
+      "pm25": {
+        "v": 33
+      },
+      "so2": {
+        "v": 0.5
+      },
+      "t": {
+        "v": 29
+      },
+      "w": {
+        "v": 6.1
+      },
+      "wg": {
+        "v": 10.2
+      }
+    },
+    "time": {
+      "s": "2024-10-21 14:00:00",
+      "tz": "-06:00",
+      "v": 1729519200,
+      "iso": "2024-10-21T14:00:00-06:00"
+    },
+    "forecast": {
+      "daily": {
+        "o3": [
+          {
+            "avg": 19,
+            "day": "2024-10-19",
+            "max": 22,
+            "min": 17
+          },
+          {
+            "avg": 18,
+            "day": "2024-10-20",
+            "max": 22,
+            "min": 16
+          },
+          {
+            "avg": 16,
+            "day": "2024-10-21",
+            "max": 18,
+            "min": 14
+          },
+          {
+            "avg": 16,
+            "day": "2024-10-22",
+            "max": 18,
+            "min": 14
+          },
+          {
+            "avg": 15,
+            "day": "2024-10-23",
+            "max": 21,
+            "min": 10
+          },
+          {
+            "avg": 12,
+            "day": "2024-10-24",
+            "max": 21,
+            "min": 4
+          },
+          {
+            "avg": 18,
+            "day": "2024-10-25",
+            "max": 22,
+            "min": 14
+          }
+        ],
+        "pm10": [
+          {
+            "avg": 15,
+            "day": "2024-10-19",
+            "max": 21,
+            "min": 6
+          },
+          {
+            "avg": 6,
+            "day": "2024-10-20",
+            "max": 19,
+            "min": 4
+          },
+          {
+            "avg": 7,
+            "day": "2024-10-21",
+            "max": 9,
+            "min": 4
+          },
+          {
+            "avg": 7,
+            "day": "2024-10-22",
+            "max": 10,
+            "min": 6
+          },
+          {
+            "avg": 13,
+            "day": "2024-10-23",
+            "max": 16,
+            "min": 7
+          },
+          {
+            "avg": 7,
+            "day": "2024-10-24",
+            "max": 11,
+            "min": 3
+          },
+          {
+            "avg": 5,
+            "day": "2024-10-25",
+            "max": 6,
+            "min": 4
+          }
+        ],
+        "pm25": [
+          {
+            "avg": 19,
+            "day": "2024-10-19",
+            "max": 23,
+            "min": 15
+          },
+          {
+            "avg": 8,
+            "day": "2024-10-20",
+            "max": 18,
+            "min": 4
+          },
+          {
+            "avg": 10,
+            "day": "2024-10-21",
+            "max": 12,
+            "min": 8
+          },
+          {
+            "avg": 11,
+            "day": "2024-10-22",
+            "max": 13,
+            "min": 10
+          },
+          {
+            "avg": 16,
+            "day": "2024-10-23",
+            "max": 21,
+            "min": 9
+          },
+          {
+            "avg": 14,
+            "day": "2024-10-24",
+            "max": 22,
+            "min": 5
+          },
+          {
+            "avg": 8,
+            "day": "2024-10-25",
+            "max": 10,
+            "min": 5
+          }
+        ],
+        "uvi": [
+          {
+            "avg": 0,
+            "day": "2024-10-20",
+            "max": 0,
+            "min": 0
+          },
+          {
+            "avg": 2,
+            "day": "2024-10-21",
+            "max": 7,
+            "min": 0
+          },
+          {
+            "avg": 2,
+            "day": "2024-10-22",
+            "max": 6,
+            "min": 0
+          },
+          {
+            "avg": 2,
+            "day": "2024-10-23",
+            "max": 7,
+            "min": 0
+          },
+          {
+            "avg": 2,
+            "day": "2024-10-24",
+            "max": 7,
+            "min": 0
+          },
+          {
+            "avg": 2,
+            "day": "2024-10-25",
+            "max": 6,
+            "min": 0
+          }
+        ]
+      }
+    },
+    "debug": {
+      "sync": "2024-10-22T04:42:20+09:00"
+    }
+  }
+}
+2024-10-21 15:56:43,774 - INFO - Successfully retrieved data for 25.795;-80.216
+2024-10-21 15:56:43,775 - INFO - Data update successful, updating title
+2024-10-21 15:56:43,844 - INFO - Update method called. Current city: 25.795;-80.216
+2024-10-21 15:56:43,844 - INFO - Time since last update: 2.210273027420044 seconds
+2024-10-21 15:56:43,844 - INFO - Using cached data
+2024-10-21 15:56:43,844 - INFO - Data update successful, updating title
+2024-10-21 15:56:45,301 - INFO - Showing DetailWindow with title: AQI Details
+2024-10-21 15:56:45,319 - DEBUG - Done button added to DetailWindow with action: closeWindow:
+2024-10-21 15:56:45,319 - DEBUG - Done button target: <DetailWindow: 0x10f00f400>
+2024-10-21 15:56:45,369 - INFO - Window did become key
+2024-10-21 15:57:20,171 - INFO - Window did resign key
+2024-10-21 15:57:28,335 - INFO - Window did become key
+2024-10-21 15:57:28,396 - INFO - closeWindow: method called
+2024-10-21 15:57:28,398 - INFO - Window did resign key
+2024-10-21 15:57:28,401 - INFO - windowWillClose_ method called
+2024-10-21 15:57:28,402 - DEBUG - Window set to None in windowWillClose_
+2024-10-21 15:57:28,403 - INFO - Window closed successfully
+2024-10-21 16:05:33,154 - INFO - Showing DetailWindow with title: AQI Details
+2024-10-21 16:05:33,166 - DEBUG - Done button added to DetailWindow with action: closeWindow:
+2024-10-21 16:05:33,166 - DEBUG - Done button target: <DetailWindow: 0x10f00f400>
+2024-10-21 16:05:33,199 - INFO - Window did become key
+2024-10-21 16:05:40,199 - INFO - Window did resign key
+2024-10-21 16:05:53,163 - INFO - Window did become key
+2024-10-21 16:05:55,703 - INFO - Window did resign key
+2024-10-21 16:06:01,417 - INFO - Window did become key
+2024-10-21 16:06:02,370 - INFO - Window did resign key
+2024-10-21 16:06:16,600 - INFO - Window did become key
+2024-10-21 16:06:17,737 - INFO - Window did resign key
+2024-10-21 16:08:13,077 - INFO - Window did become key
+2024-10-21 16:08:13,140 - INFO - closeWindow: method called
+2024-10-21 16:08:13,142 - INFO - Window did resign key
+2024-10-21 16:08:13,143 - INFO - windowWillClose_ method called
+2024-10-21 16:08:13,143 - DEBUG - Window set to None in windowWillClose_
+2024-10-21 16:08:13,144 - INFO - Window closed successfully

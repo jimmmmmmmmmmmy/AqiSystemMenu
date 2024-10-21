@@ -7,6 +7,11 @@ from AppKit import (
     NSControlStateValueOn, NSControlStateValueOff
 )
 from aqi_visualization_view import AQIVisualizationView
+import logging
+
+
+logging.basicConfig(filename='detailwindow.log', level=logging.DEBUG, 
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 class DetailWindow(NSObject):
     window = objc.ivar()
@@ -23,6 +28,7 @@ class DetailWindow(NSObject):
 
     @objc.python_method
     def showWindow_withText_andData_(self, title, text, data):
+        logging.info(f"Showing DetailWindow with title: {title}")
         windowWidth = 550
         windowHeight = 550
         padding = 35
@@ -44,8 +50,8 @@ class DetailWindow(NSObject):
         
         # Always set the window size
         self.window.setFrame_display_(NSMakeRect(self.window.frame().origin.x,
-                                                 self.window.frame().origin.y,
-                                                 windowWidth, windowHeight), True)
+                                                self.window.frame().origin.y,
+                                                windowWidth, windowHeight), True)
         self.window.setMinSize_((windowWidth, windowHeight))
         self.window.setMaxSize_((windowWidth, windowHeight))
 
@@ -80,8 +86,10 @@ class DetailWindow(NSObject):
         self.done_button.setTitle_("Done")
         self.done_button.setBezelStyle_(NSBezelStyleRounded)
         self.done_button.setTarget_(self)
-        self.done_button.setAction_(objc.selector(self.closeWindow_, signature=b'v@:'))
+        self.done_button.setAction_(self.closeWindow_)
         contentView.addSubview_(self.done_button)
+        logging.debug(f"Done button added to DetailWindow with action: {self.done_button.action()}")
+        logging.debug(f"Done button target: {self.done_button.target()}")
 
         self.window.makeKeyAndOrderFront_(None)
         NSApp.activateIgnoringOtherApps_(True)
@@ -100,32 +108,59 @@ class DetailWindow(NSObject):
         NSUserDefaults.standardUserDefaults().setBool_forKey_(isEnabled, "StartAtLogin")
         NSUserDefaults.standardUserDefaults().synchronize()
 
-    @objc.python_method
     def closeWindow_(self, sender):
+        logging.info("closeWindow: method called")
         if self.window:
-            NSApp.performSelectorOnMainThread_withObject_waitUntilDone_(
-                objc.selector(self._closeWindowOnMainThread, signature=b'v@:'),
-                None,
-                True
-            )
+            if NSApp.modalWindow() == self.window:
+                NSApp.stopModal()
+            self.window.orderOut_(None)
+            self.window.close()
+            self.window = None
+            NSApp.updateWindows()
+            NSApp.sendEvent_(NSApp.currentEvent())
+            logging.info("Window closed successfully")
+        else:
+            logging.warning("Window is None, cannot close")
 
-    @objc.python_method
-    def _closeWindowOnMainThread(self):
-        NSApp.stopModal()
-        self.window.orderOut_(None)
-        self.window.close()
-        self.window = None
+    def windowDidBecomeKey_(self, notification):
+        logging.info("Window did become key")
+
+    def windowDidResignKey_(self, notification):
+        logging.info("Window did resign key")
 
     def windowWillClose_(self, notification):
+        logging.info("windowWillClose_ method called")
         NSApp.stopModal()
         self.window = None
+        logging.debug("Window set to None in windowWillClose_")
 
     def windowShouldClose_(self, sender):
+        logging.info(f"windowShouldClose_ called for window: {sender}")
         return True
 
-    def dealloc(self):
+    def testButtonAction_(self, sender):
+        logging.info("Test button action called")
+        print("Test button action called")
+
+        # In showWindow_withText_andData_ method:
+        self.done_button.setAction_(objc.selector("testButtonAction:", signature=b"v@:"))
+
+    # Add a new method as a fallback
+    @objc.python_method
+    def fallbackCloseWindow_(self, sender):
+        logging.info("fallbackCloseWindow_ method called")
         if self.window:
-            self.window.setDelegate_(None)
             self.window.close()
         self.window = None
+        logging.info("Window closed using fallback method")
+
+    def dealloc(self):
+        logging.info("dealloc method called")
+        if self.window:
+            logging.debug("Window exists, closing and releasing it")
+            self.window.setDelegate_(None)
+            self.window.close()
+            self.window.release()
+        self.window = None
+        logging.debug("Window set to None in dealloc")
         objc.super(DetailWindow, self).dealloc()
