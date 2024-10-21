@@ -2,11 +2,18 @@ import rumps
 import requests
 import time
 from AppKit import NSApplication, NSBundle
-from custom_window import CustomWindow
+from detail_window import DetailWindow
 from search_city_window import SearchCityWindow
+import logging
+import re
+import json
 
 info = NSBundle.mainBundle().infoDictionary()
 info['LSUIElement'] = '1'
+
+logging.basicConfig(filename='openair.log', level=logging.DEBUG, 
+                    format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 class OpenAir(rumps.App):
     def __init__(self):
@@ -15,9 +22,11 @@ class OpenAir(rumps.App):
         self.token = "09975e52f3b1bf07469353eabdeb513092b85f9d"
         self.base_url = "https://api.waqi.info"
         self.user_ip = self.get_user_ip()
-        self.current_city = self.get_location_from_ip() or "Sarasota"
+        self.current_city = self.get_location_from_ip() or "San Francisco"
+        self.current_city_name = "Loading..."
+        self.temperature_unit = "°F"
         self.format_options = {
-            'City': True,
+            'City': False,
             'AQI': True,
             'PM2.5': False,
             'PM10': False,
@@ -25,10 +34,11 @@ class OpenAir(rumps.App):
             'NO\u2082': False,
             'SO\u2082': False,
             'CO': False,
-            'Temperature': False,
-            'Humidity': False,
+            'Temperature': True,
+            'Humidity': True,
             'Wind': False
         }
+        self.temperature_unit = '°F'
         self.setup_menu()
         self.cached_data = None
         self.last_update_time = 0
@@ -37,39 +47,48 @@ class OpenAir(rumps.App):
         self.timer.start()
         self.update(None)  # Initial update
         self.search_window = None
-        self.custom_window = CustomWindow.alloc().init()
-
-
+        self.detail_window = DetailWindow.alloc().init()
 
     def setup_menu(self):
         format_menu = rumps.MenuItem("Format Options")
         for option in self.format_options:
-            item = rumps.MenuItem(option, callback=self.toggle_format_option)
-            item.state = self.format_options[option]
-            format_menu.add(item)
+            if option == 'Temperature':
+                temp_menu = rumps.MenuItem("Temperature", callback=self.toggle_format_option)
+                temp_menu.add(rumps.MenuItem("°F", callback=self.set_temperature_unit))
+                temp_menu.add(rumps.MenuItem("°C", callback=self.set_temperature_unit))
 
-        format_menu.add(None)
-        
+                format_menu.add(temp_menu)
+            else:
+                item = rumps.MenuItem(option, callback=self.toggle_format_option)
+                format_menu.add(item)
+
+        format_menu.add(None)  # Separator
         format_menu.add(rumps.MenuItem("Reset", callback=self.reset_format_options))
         
         self.menu = ["Search City", format_menu, "Details...", None]
+        self.update_format_menu()  # Call this to set initial states
 
     def toggle_format_option(self, sender):
         self.format_options[sender.title] = not sender.state
-        sender.state = self.format_options[sender.title]
+        self.update_format_menu()
         self.update(None)
 
     def reset_format_options(self, _):
         for option in self.format_options:
-            self.format_options[option] = option in ['City', 'AQI']
+            self.format_options[option] = option in ['City', 'AQI', 'Temperature']
+        self.temperature_unit = '°F'
         self.update_format_menu()
         self.update(None)
 
     def update_format_menu(self):
         format_menu = self.menu["Format Options"]
         for item in format_menu.values():
-            if isinstance(item, rumps.MenuItem) and item.title in self.format_options:
-                item.state = self.format_options[item.title]
+            if isinstance(item, rumps.MenuItem):
+                if item.title in self.format_options:
+                    item.state = self.format_options[item.title]
+                    if item.title == "Temperature":
+                        for subitem in item.values():
+                            subitem.state = subitem.title == self.temperature_unit
 
     def get_user_ip(self):
         try:
@@ -81,34 +100,122 @@ class OpenAir(rumps.App):
     def get_location_from_ip(self):
         if self.user_ip:
             url = f"{self.base_url}/feed/here/?token={self.token}"
-            response = requests.get(url)
-            if response.status_code == 200:
-                data = response.json()
-                if data['status'] == 'ok':
-                    return data['data']['city']['name']
+            try:
+                response = requests.get(url)
+                if response.status_code == 200:
+                    data = response.json()
+                    if data['status'] == 'ok':
+                        city = data['data']['city']
+                        if isinstance(city, dict):
+                            if 'geo' in city:
+                                lat, lon = city['geo']
+                                return f"{lat:.3f};{lon:.3f}"  # Return rounded coordinates
+                            return city.get('name')
+                        return city
+            except Exception as e:
+                logging.error(f"Error getting location from IP: {e}")
         return None
 
     def applicationSupportsSecureRestorableState_(self, app):
         return True
+    
+    def parse_api_data(self, data):
+        iaqi = data.get('iaqi', {})
+        forecast = data.get('forecast', {}).get('daily', {})
+        
+        visualization_data = {
+            'PM2.5': {'current': iaqi.get('pm25', {}).get('v', 0), 'forecast': forecast.get('pm25', [])},
+            'PM10': {'current': iaqi.get('pm10', {}).get('v', 0), 'forecast': forecast.get('pm10', [])},
+            'O3': {'current': iaqi.get('o3', {}).get('v', 0), 'forecast': forecast.get('o3', [])},
+            'NO2': {'current': iaqi.get('no2', {}).get('v', 0), 'forecast': []},
+            'SO2': {'current': iaqi.get('so2', {}).get('v', 0), 'forecast': []},
+            'CO': {'current': iaqi.get('co', {}).get('v', 0), 'forecast': []},
+            'Temp.': {'current': iaqi.get('t', {}).get('v', 0), 'forecast': []},
+            'Pressure': {'current': iaqi.get('p', {}).get('v', 0), 'forecast': []},
+            'Humidity': {'current': iaqi.get('h', {}).get('v', 0), 'forecast': []},
+            'Wind': {'current': iaqi.get('w', {}).get('v', 0), 'forecast': []},
+            'UVI': {'current': iaqi.get('uvi', {}).get('v', 0), 'forecast': forecast.get('uvi', [])}
+        }
+        
+        return {
+            'aqi': data.get('aqi', 0),
+            'iaqi': iaqi,
+            'city': data.get('city', {}),
+            'visualization_data': visualization_data,
+            'raw_data': data  # Include the full raw data for potential future use
+        }
 
-    def get_aqi_data(self, city):
-        url = f"{self.base_url}/feed/{city}/?token={self.token}"
-        response = requests.get(url)
-        if response.status_code == 200:
+    def get_aqi_data(self, location):
+        logging.info(f"get_aqi_data called with location: {location}")
+        
+        if not location:
+            logging.error("Location is empty or None")
+            return None
+        
+        # Check if the location is in the format of coordinates
+        if re.match(r'^-?\d+(\.\d+)?,-?\d+(\.\d+)?$', location):
+            # Round coordinates to 3 decimal places
+            try:
+                lat, lon = map(float, location.split(','))
+            except ValueError:
+                logging.error(f"Invalid coordinate format: {location}")
+                return None
+            rounded_location = f"{lat:.3f};{lon:.3f}"
+            url = f"{self.base_url}/feed/geo:{rounded_location}/?token={self.token}"
+            logging.info(f"Using rounded coordinate-based URL: {url}")
+        else:
+            # Use the location name directly
+            url = f"{self.base_url}/feed/geo:{location}/?token={self.token}"
+            logging.info(f"Using city-based URL: {url}")
+        
+        try:
+            logging.info(f"Sending GET request to: {url}")
+            response = requests.get(url, timeout=10)
+            logging.info(f"Received response with status code: {response.status_code}")
+            
+            response.raise_for_status()
             data = response.json()
+            
+            logging.info(f"Parsed JSON response: {json.dumps(data, indent=2)}")
+            
             if data['status'] == 'ok':
+                logging.info(f"Successfully retrieved data for {location}")
+                self.current_city_name = data['data']['city']['name']
                 return data['data']
-        return None
+            else:
+                logging.error(f"API returned non-OK status: {data['status']}")
+                logging.error(f"Full API response: {json.dumps(data, indent=2)}")
+                if 'data' in data:
+                    logging.error(f"Error details: {json.dumps(data['data'], indent=2)}")
+                return None
+        except Exception as e:
+            logging.error(f"Error in get_aqi_data: {str(e)}")
+            return None
 
+
+    def get_coordinates_for_city(self, city):
+        # This is a placeholder method. In a real implementation, you would use a geocoding service.
+        # For now, we'll return None, but you should implement this properly.
+        logging.info(f"Attempting to get coordinates for {city}")
+        return None  # Replace this with actual geocoding logic
+    
     def update(self, _):
         current_time = time.time()
+        logging.info(f"Update method called. Current city: {self.current_city}")
+        logging.info(f"Time since last update: {current_time - self.last_update_time} seconds")
+        
         if current_time - self.last_update_time > self.update_interval or self.cached_data is None:
+            logging.info(f"Updating data for {self.current_city}")
             self.cached_data = self.get_aqi_data(self.current_city)
             self.last_update_time = current_time
+        else:
+            logging.info("Using cached data")
 
         if self.cached_data:
+            logging.info("Data update successful, updating title")
             self.update_title()
         else:
+            logging.error("Failed to update data")
             self.title = "Failed to update"
 
     def update_title(self):
@@ -117,7 +224,7 @@ class OpenAir(rumps.App):
         iaqi = data.get('iaqi', {})
 
         if self.format_options['City']:
-            title_parts.append(self.current_city)
+            title_parts.append(self.current_city_name)
         if self.format_options['AQI']:
             title_parts.append(f"AQI: {data['aqi']}")
         if self.format_options['PM2.5']:
@@ -133,7 +240,16 @@ class OpenAir(rumps.App):
         if self.format_options['CO']:
             title_parts.append(f"CO {iaqi.get('co', {}).get('v', 'N/A')}")
         if self.format_options['Temperature']:
-            title_parts.append(f"{iaqi.get('t', {}).get('v', 'N/A')}°C")
+            temp_c = iaqi.get('t', {}).get('v', 'N/A')
+            if temp_c != 'N/A':
+                if self.temperature_unit == "°C":
+                    temp_display = f"{temp_c}°C"
+                else:
+                    temp_f = (temp_c * 9/5) + 32
+                    temp_display = f"{temp_f:.1f}°F"
+            else:
+                temp_display = 'N/A'
+            title_parts.append(temp_display)
         if self.format_options['Humidity']:
             title_parts.append(f"RH: {iaqi.get('h', {}).get('v', 'N/A')}%")
         if self.format_options['Wind']:
@@ -160,12 +276,20 @@ class OpenAir(rumps.App):
             self.search_window = SearchCityWindow.alloc().initWithApp_(self)
         self.search_window.showWindow()
 
+    @rumps.clicked("Format Options", "Temperature", "°C")
+    @rumps.clicked("Format Options", "Temperature", "°F")
+    def set_temperature_unit(self, sender):
+        self.temperature_unit = sender.title
+        self.update_format_menu()
+        self.update(None)
+
     @rumps.clicked("Details...")
     def show_details(self, _):
         if self.cached_data:
-            aqi = self.cached_data['aqi']
-            iaqi = self.cached_data['iaqi']
-            details = f"City: {self.current_city}\n"
+            parsed_data = self.parse_api_data(self.cached_data)
+            aqi = parsed_data['aqi']
+            iaqi = parsed_data['iaqi']
+            details = f"City: {self.current_city}\nAQI: {self.cached_data['aqi']}\n"
             details += f"AQI: {aqi}\n"
             details += f"PM2.5: {iaqi.get('pm25', {}).get('v', 'N/A')}\n"
             details += f"PM10: {iaqi.get('pm10', {}).get('v', 'N/A')}\n"
@@ -177,16 +301,18 @@ class OpenAir(rumps.App):
             details += f"Humidity: {iaqi.get('h', {}).get('v', 'N/A')}%\n"
             details += f"Wind: {iaqi.get('w', {}).get('v', 'N/A')} m/s"
 
-            self.custom_window.showWindow_withText_("AQI Details", details)
+            self.detail_window.showWindow_withText_andData_("AQI Details", details, self.cached_data)
         else:
             rumps.notification("Error", "Failed to fetch AQI data", "")
 
     def terminate(self):
-        if self.custom_window:
-            self.custom_window.dealloc()
-            self.custom_window = None
+        if self.detail_window:
+            self.detail_window.dealloc()
+            self.detail_window = None
         super(OpenAir, self).terminate()
 
 if __name__ == "__main__":
     app = OpenAir()
     app.run()
+
+    
