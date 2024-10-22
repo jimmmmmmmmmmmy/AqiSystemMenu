@@ -591,3 +591,44 @@ The importance of proper method naming and decoration when working with PyObjC.
 The value of detailed logging in diagnosing issues with GUI applications.
 The need to understand the intricacies of how Python methods are exposed to Objective-C when using PyObjC.
 This experience highlights the sometimes subtle interactions between Python and Objective-C in PyObjC applications, and the importance of adhering to naming conventions and proper method exposure when bridging between the two languages.
+~~~~~~~~~~
+Initial Problem:
+The AQI visualization wasn't displaying histograms for the collected data, showing only metric names and current values.
+
+Attempted Solutions:
+a. We implemented a basic histogram drawing function in the drawChart method.
+b. We added debugging output to understand the data structure and values.
+c. We modified the height calculation to handle constant values.
+d. We adjusted the scaling to use 24-hour min/max values.
+
+Key Changes:
+a. Data Processing: We implemented parsing of string data to float and filtering of None values.
+b. Bar Drawing: We used NSBezierPath.fillRect_() to draw bars for each data point.
+c. Scaling Logic: We introduced conditional logic to handle constant values and use 24-hour min/max for scaling.
+d. Layout Optimization: We defined specific regions for labels, current values, and min/max displays.
+
+Final Working Solution:
+The solution that worked involved:
+1. Processing 24 data points per chart (full 24-hour period).
+2. Drawing a variable number of bars per chart, equal to the number of non-null data points.
+3. Implementing null checks to skip drawing for missing data points.
+4. Using global min_value and max_value for each metric to scale the bars.
+5. Displaying current value, up to 24 bars, and min/max values for each metric.
+
+Why It Worked:
+By using the 24-hour min/max for scaling, we allowed for variation in bar heights even with limited current data.
+Skipping null values in the bar drawing loop prevented issues with missing data points.
+The fixed height for constant values ensured visibility even when all values were the same.
+
+Lessons Learned:
+1. The importance of understanding the nature of the data (sparsity, constant values) before implementing visualizations.
+2. The value of incremental debugging and logging to identify issues in data processing and rendering.
+3. The need for flexible visualization techniques that can handle various data scenarios (constant values, missing data, limited data points).
+4. The importance of balancing accuracy with meaningful representation in data visualization.
+
+Performance Considerations:
+Time complexity: O(m * n), where m is the number of metrics and n is the number of data points (24).
+Space complexity: O(n) for storing parsed data per metric.
+Reduced redundant calculations by moving invariant calculations out of the bar drawing loop.
+
+This experience highlights the challenges in creating meaningful visualizations with limited or constant data, and the importance of adaptive rendering techniques in data visualization applications. It also underscores the value of iterative development and debugging in solving complex UI rendering issues.

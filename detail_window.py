@@ -9,7 +9,6 @@ from AppKit import (
 from aqi_visualization_view import AQIVisualizationView
 import logging
 
-
 logging.basicConfig(filename='detailwindow.log', level=logging.DEBUG, 
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -17,21 +16,31 @@ class DetailWindow(NSObject):
     window = objc.ivar()
     checkbox = objc.ivar()
     done_button = objc.ivar()
+    main_app = objc.ivar()
     
-    def init(self):
+    @objc.python_method
+    def initWithApp_(self, app):
         self = objc.super(DetailWindow, self).init()
         if self:
             self.window = None
             self.checkbox = None
             self.done_button = None
+            self.main_app = app
         return self
 
     @objc.python_method
     def showWindow_withText_andData_(self, title, text, data):
         logging.info(f"Showing DetailWindow with title: {title}")
-        windowWidth = 550
-        windowHeight = 550
+        windowWidth = 400
+        windowHeight = 600
         padding = 35
+
+        try:
+            stored_data = self.main_app.get_stored_data()
+            logging.info(f"Retrieved stored data: {stored_data[:5]}")  # Log first 5 entries
+        except Exception as e:
+            logging.error(f"Error retrieving stored data: {str(e)}")
+            stored_data = []
 
         if self.window is None:
             screen = NSScreen.mainScreen()
@@ -59,8 +68,8 @@ class DetailWindow(NSObject):
         self.window.setReleasedWhenClosed_(False)
         self.window.setDelegate_(self)
 
-        # Set the background color to match the default gray color
-        self.window.setBackgroundColor_(NSColor.windowBackgroundColor())
+        # Trying to match the Background Color, but
+        # self.window.setBackgroundColor_(NSColor.windowBackgroundColor())
 
         contentView = self.window.contentView()
         for subview in contentView.subviews():
@@ -68,12 +77,12 @@ class DetailWindow(NSObject):
 
         # Create visualization view with padding
         visualizationView = AQIVisualizationView.alloc().initWithFrame_andData_(
-            NSMakeRect(padding, padding + 40, windowWidth - 2*padding, windowHeight - 2*padding - 40), data
+            NSMakeRect(padding, padding + 35, windowWidth - 2*padding, windowHeight - 2*padding - 40), stored_data
         )
         contentView.addSubview_(visualizationView)
 
-        # Add checkbox
-        self.checkbox = NSButton.alloc().initWithFrame_(NSMakeRect(padding, 10, 200, 20))
+        # LOGIN checkbox
+        self.checkbox = NSButton.alloc().initWithFrame_(NSMakeRect(padding, 10, 200, 40))
         self.checkbox.setButtonType_(NSButtonTypeSwitch)
         self.checkbox.setTitle_("Start OpenAir at login")
         self.checkbox.setState_(NSControlStateValueOn if self.isLoginItemEnabled() else NSControlStateValueOff)
@@ -81,15 +90,13 @@ class DetailWindow(NSObject):
         self.checkbox.setAction_(objc.selector(self.toggleLoginItem_, signature=b'v@:'))
         contentView.addSubview_(self.checkbox)
 
-        # Add Done button
-        self.done_button = NSButton.alloc().initWithFrame_(NSMakeRect(windowWidth - padding - 80, 10, 80, 30))
+        # DONE button
+        self.done_button = NSButton.alloc().initWithFrame_(NSMakeRect(windowWidth - padding - 80, 10, 80, 40))
         self.done_button.setTitle_("Done")
         self.done_button.setBezelStyle_(NSBezelStyleRounded)
         self.done_button.setTarget_(self)
         self.done_button.setAction_(self.closeWindow_)
         contentView.addSubview_(self.done_button)
-        logging.debug(f"Done button added to DetailWindow with action: {self.done_button.action()}")
-        logging.debug(f"Done button target: {self.done_button.target()}")
 
         self.window.makeKeyAndOrderFront_(None)
         NSApp.activateIgnoringOtherApps_(True)

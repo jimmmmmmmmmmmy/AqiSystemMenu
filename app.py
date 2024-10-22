@@ -7,6 +7,8 @@ from search_city_window import SearchCityWindow
 import logging
 import re
 import json
+from datetime import datetime, timedelta
+import sqlite3
 
 info = NSBundle.mainBundle().infoDictionary()
 info['LSUIElement'] = '1'
@@ -23,10 +25,9 @@ class OpenAir(rumps.App):
         self.base_url = "https://api.waqi.info"
         self.user_ip = self.get_user_ip()
         self.current_city = self.get_location_from_ip() or "San Francisco"
-        self.current_city_name = "Loading..."
+        self.current_city_name = self.get_city_name_ip()
         self.temperature_unit = "°F"
         self.format_options = {
-            'City': False,
             'AQI': True,
             'PM2.5': False,
             'PM10': False,
@@ -42,12 +43,35 @@ class OpenAir(rumps.App):
         self.setup_menu()
         self.cached_data = None
         self.last_update_time = 0
-        self.update_interval = 900  # 15 minutes
-        self.timer = rumps.Timer(self.update, 900)
+        self.db_connection = sqlite3.connect('aqi_data.db')
+        self.create_table()
+        self.update_interval = 300  # 1 hour in seconds
+        self.timer = rumps.Timer(self.update, self.update_interval)
         self.timer.start()
         self.update(None)  # Initial update
-        self.search_window = None
-        self.detail_window = DetailWindow.alloc().init()
+        self.detail_window = DetailWindow.alloc().initWithApp_(self) 
+        self.prune_old_data()  # Prune old data on startup
+
+    def create_table(self):
+        cursor = self.db_connection.cursor()
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS aqi_data (
+            timestamp TEXT PRIMARY KEY,
+            city TEXT,
+            aqi INTEGER,
+            pm25 REAL,
+            pm10 REAL,
+            o3 REAL,
+            no2 REAL,
+            so2 REAL,
+            co REAL,
+            temperature REAL,
+            pressure REAL,
+            humidity REAL,
+            wind REAL
+        )
+        ''')
+        self.db_connection.commit()
 
     def setup_menu(self):
         format_menu = rumps.MenuItem("Format Options")
@@ -75,7 +99,7 @@ class OpenAir(rumps.App):
 
     def reset_format_options(self, _):
         for option in self.format_options:
-            self.format_options[option] = option in ['City', 'AQI', 'Temperature']
+            self.format_options[option] = option in ['AQI', 'Temperature', 'Humidity']
         self.temperature_unit = '°F'
         self.update_format_menu()
         self.update(None)
@@ -96,6 +120,17 @@ class OpenAir(rumps.App):
             return response.json()['ip']
         except:
             return None
+        
+    def get_city_name_ip(self):
+        ip = self.get_user_ip()
+        if ip:
+            url = f"{self.base_url}/feed/here/?token={self.token}"
+            response = requests.get(url)
+            if response.status_code == 200:
+                data = response.json()
+                if data['status'] == 'ok':
+                    return data['data']['city']['name']
+        return None
 
     def get_location_from_ip(self):
         if self.user_ip:
@@ -152,6 +187,8 @@ class OpenAir(rumps.App):
             logging.error("Location is empty or None")
             return None
         
+
+        
         # Check if the location is in the format of coordinates
         if re.match(r'^-?\d+(\.\d+)?,-?\d+(\.\d+)?$', location):
             # Round coordinates to 3 decimal places
@@ -168,30 +205,144 @@ class OpenAir(rumps.App):
             url = f"{self.base_url}/feed/geo:{location}/?token={self.token}"
             logging.info(f"Using city-based URL: {url}")
         
-        try:
-            logging.info(f"Sending GET request to: {url}")
-            response = requests.get(url, timeout=10)
-            logging.info(f"Received response with status code: {response.status_code}")
-            
-            response.raise_for_status()
-            data = response.json()
-            
-            logging.info(f"Parsed JSON response: {json.dumps(data, indent=2)}")
-            
-            if data['status'] == 'ok':
-                logging.info(f"Successfully retrieved data for {location}")
-                self.current_city_name = data['data']['city']['name']
-                return data['data']
-            else:
-                logging.error(f"API returned non-OK status: {data['status']}")
-                logging.error(f"Full API response: {json.dumps(data, indent=2)}")
-                if 'data' in data:
-                    logging.error(f"Error details: {json.dumps(data['data'], indent=2)}")
-                return None
-        except Exception as e:
-            logging.error(f"Error in get_aqi_data: {str(e)}")
+        
+        logging.info(f"Sending GET request to: {url}")
+        response = requests.get(url, timeout=10)
+        logging.info(f"Received response with status code: {response.status_code}")
+        
+        response.raise_for_status()
+        data = response.json()
+        
+        logging.info(f"Parsed JSON response: {json.dumps(data, indent=2)}")
+        
+        if data['status'] == 'ok':
+            self.store_aqi_data(data['data'])
+            return data['data']
+        else:
+            logging.error(f"API returned non-OK status: {data['status']}")
             return None
+        
+    def store_aqi_data(self, data):
+        cursor = self.db_connection.cursor()
+        current_time = datetime.now()
+        current_hour = current_time.strftime('%Y-%m-%d %H')
+        
+        try:
+            # Check if we already have data for this hour
+            cursor.execute('''
+            SELECT COUNT(*) FROM aqi_data 
+            WHERE strftime('%Y-%m-%d %H', timestamp) = ?
+            ''', (current_hour,))
+            
+            count = cursor.fetchone()[0]
+            
+            if count > 0:
+                # Update existing record for this hour
+                cursor.execute('''
+                UPDATE aqi_data 
+                SET timestamp = ?, 
+                    city = ?,
+                    aqi = ?, 
+                    pm25 = ?, 
+                    pm10 = ?, 
+                    o3 = ?, 
+                    no2 = ?, 
+                    so2 = ?, 
+                    co = ?, 
+                    temperature = ?, 
+                    pressure = ?, 
+                    humidity = ?, 
+                    wind = ?
+                WHERE strftime('%Y-%m-%d %H', timestamp) = ?
+                ''', (
+                    current_time.isoformat(),
+                    str(data['city']['name']),
+                    int(data['aqi']),
+                    float(data.get('iaqi', {}).get('pm25', {}).get('v', 0) or 0),
+                    float(data.get('iaqi', {}).get('pm10', {}).get('v', 0) or 0),
+                    float(data.get('iaqi', {}).get('o3', {}).get('v', 0) or 0),
+                    float(data.get('iaqi', {}).get('no2', {}).get('v', 0) or 0),
+                    float(data.get('iaqi', {}).get('so2', {}).get('v', 0) or 0),
+                    float(data.get('iaqi', {}).get('co', {}).get('v', 0) or 0),
+                    float(data.get('iaqi', {}).get('t', {}).get('v', 0) or 0),
+                    float(data.get('iaqi', {}).get('p', {}).get('v', 0) or 0),
+                    float(data.get('iaqi', {}).get('h', {}).get('v', 0) or 0),
+                    float(data.get('iaqi', {}).get('w', {}).get('v', 0) or 0),
+                    current_hour
+                ))
+            else:
+                # Insert new record
+                cursor.execute('''
+                INSERT INTO aqi_data
+                (timestamp, city, aqi, pm25, pm10, o3, no2, so2, co, temperature, pressure, humidity, wind)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    current_time.isoformat(),
+                    str(data['city']['name']),
+                    int(data['aqi']),
+                    float(data.get('iaqi', {}).get('pm25', {}).get('v', 0) or 0),
+                    float(data.get('iaqi', {}).get('pm10', {}).get('v', 0) or 0),
+                    float(data.get('iaqi', {}).get('o3', {}).get('v', 0) or 0),
+                    float(data.get('iaqi', {}).get('no2', {}).get('v', 0) or 0),
+                    float(data.get('iaqi', {}).get('so2', {}).get('v', 0) or 0),
+                    float(data.get('iaqi', {}).get('co', {}).get('v', 0) or 0),
+                    float(data.get('iaqi', {}).get('t', {}).get('v', 0) or 0),
+                    float(data.get('iaqi', {}).get('p', {}).get('v', 0) or 0),
+                    float(data.get('iaqi', {}).get('h', {}).get('v', 0) or 0),
+                    float(data.get('iaqi', {}).get('w', {}).get('v', 0) or 0)
+                ))
+            
+            self.db_connection.commit()
+            logging.info(f"Successfully stored/updated data for hour {current_hour}")
+        except Exception as e:
+            logging.error(f"Error storing data: {str(e)}")
+            self.db_connection.rollback()
 
+    def get_stored_data(self):
+        cursor = self.db_connection.cursor()
+        twenty_four_hours_ago = (datetime.now() - timedelta(hours=24)).isoformat()
+   
+        # Get one reading per hour for the last 24 hours
+        cursor.execute('''
+        WITH HourlyData AS (
+            SELECT *,
+                strftime('%Y-%m-%d %H', timestamp) as hour,
+                ROW_NUMBER() OVER (PARTITION BY strftime('%Y-%m-%d %H', timestamp) 
+                                    ORDER BY timestamp DESC) as rn
+            FROM aqi_data
+            WHERE timestamp > ?
+        )
+        SELECT timestamp, city, aqi, pm25, pm10, o3, no2, so2, co, 
+            temperature, pressure, humidity, wind
+        FROM HourlyData
+        WHERE rn = 1
+        ORDER BY timestamp ASC
+        ''', (twenty_four_hours_ago,))
+
+        data = cursor.fetchall()
+        logging.info(f"Retrieved {len(data)} hourly readings from the last 24 hours")
+        return data
+    
+    def clean_hourly_duplicates(self):
+        """Keep only the most recent reading for each hour."""
+        cursor = self.db_connection.cursor()
+        
+        try:
+            # Delete all but the most recent reading for each hour
+            cursor.execute('''
+            DELETE FROM aqi_data
+            WHERE rowid NOT IN (
+                SELECT MIN(rowid)
+                FROM aqi_data
+                GROUP BY strftime('%Y-%m-%d %H', timestamp)
+            )
+            ''')
+            rows_deleted = cursor.rowcount
+            self.db_connection.commit()
+            logging.info(f"Cleaned up {rows_deleted} duplicate hourly readings")
+        except Exception as e:
+            logging.error(f"Error cleaning hourly duplicates: {str(e)}")
+            self.db_connection.rollback()
 
     def get_coordinates_for_city(self, city):
         # This is a placeholder method. In a real implementation, you would use a geocoding service.
@@ -201,16 +352,14 @@ class OpenAir(rumps.App):
     
     def update(self, _):
         current_time = time.time()
-        logging.info(f"Update method called. Current city: {self.current_city}")
-        logging.info(f"Time since last update: {current_time - self.last_update_time} seconds")
-        
-        if current_time - self.last_update_time > self.update_interval or self.cached_data is None:
+        if current_time - self.last_update_time > self.update_interval:
             logging.info(f"Updating data for {self.current_city}")
             self.cached_data = self.get_aqi_data(self.current_city)
+            if self.cached_data:
+                self.store_aqi_data(self.cached_data)
             self.last_update_time = current_time
-        else:
-            logging.info("Using cached data")
-
+            self.prune_old_data()  # Prune old data after each update
+        
         if self.cached_data:
             logging.info("Data update successful, updating title")
             self.update_title()
@@ -223,8 +372,8 @@ class OpenAir(rumps.App):
         data = self.cached_data
         iaqi = data.get('iaqi', {})
 
-        if self.format_options['City']:
-            title_parts.append(self.current_city_name)
+        #if self.format_options['City']:
+        #    title_parts.append(self.current_city_name)
         if self.format_options['AQI']:
             title_parts.append(f"AQI: {data['aqi']}")
         if self.format_options['PM2.5']:
@@ -306,10 +455,26 @@ class OpenAir(rumps.App):
             rumps.notification("Error", "Failed to fetch AQI data", "")
 
     def terminate(self):
-        if self.detail_window:
-            self.detail_window.dealloc()
-            self.detail_window = None
+        self.db_connection.close()
         super(OpenAir, self).terminate()
+
+    def prune_old_data(self):
+        """Remove data older than 24 hours."""
+        cursor = self.db_connection.cursor()
+        twenty_four_hours_ago = (datetime.now() - timedelta(hours=24)).isoformat()
+        
+        try:
+            cursor.execute('DELETE FROM aqi_data WHERE timestamp < ?', (twenty_four_hours_ago,))
+            rows_deleted = cursor.rowcount
+            self.db_connection.commit()
+            logging.info(f"Pruned {rows_deleted} readings older than 24 hours")
+            
+            # After pruning, clean up any remaining hourly duplicates
+            self.clean_hourly_duplicates()
+        except Exception as e:
+            logging.error(f"Error pruning old data: {str(e)}")
+            self.db_connection.rollback()
+
 
 if __name__ == "__main__":
     app = OpenAir()
