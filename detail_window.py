@@ -33,7 +33,8 @@ class DetailWindow(NSObject):
         logging.info(f"Showing DetailWindow with title: {title}")
         windowWidth = 400
         windowHeight = 600
-        padding = 35
+        padding = 20
+        bottomPadding = 60
 
         try:
             stored_data = self.main_app.get_stored_data()
@@ -68,7 +69,7 @@ class DetailWindow(NSObject):
         self.window.setReleasedWhenClosed_(False)
         self.window.setDelegate_(self)
 
-        # Trying to match the Background Color, but
+        # Trying to match
         # self.window.setBackgroundColor_(NSColor.windowBackgroundColor())
 
         contentView = self.window.contentView()
@@ -77,7 +78,10 @@ class DetailWindow(NSObject):
 
         # Create visualization view with padding
         visualizationView = AQIVisualizationView.alloc().initWithFrame_andData_(
-            NSMakeRect(padding, padding + 35, windowWidth - 2*padding, windowHeight - 2*padding - 40), stored_data
+            NSMakeRect(padding, bottomPadding, 
+                      windowWidth - 2*padding, 
+                      windowHeight - bottomPadding - padding), 
+            stored_data
         )
         contentView.addSubview_(visualizationView)
 
