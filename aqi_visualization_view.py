@@ -8,10 +8,11 @@ from datetime import datetime
 
 class AQIVisualizationView(NSView):
     @objc.python_method
-    def initWithFrame_andData_(self, frame, data):
+    def initWithFrame_andData_andTempUnit_(self, frame, data, temperature_unit):
         self = objc.super(AQIVisualizationView, self).initWithFrame_(frame)
         if self:
             self.data = list(data[-24:])  # Last 24 hours, most recent last
+            self.temperature_unit = temperature_unit
             self.setup()
         return self
 
@@ -67,14 +68,13 @@ class AQIVisualizationView(NSView):
         self.currentValueWidth = 35
         self.minMaxWidth = 55
         self.aqi_levels = [
-            (0, 50, "Good", NSColor.systemGreenColor()),
+            (0, 50, "Healthy", NSColor.systemGreenColor()),
             (51, 100, "Moderate", NSColor.yellowColor()),
             (101, 150, "Unhealthy for Sensitive Groups", NSColor.orangeColor()),
             (151, 200, "Unhealthy", NSColor.redColor()),
             (201, 300, "Very Unhealthy", NSColor.purpleColor()),
             (301, 500, "Hazardous", NSColor.darkGrayColor())
         ]
-
 
     def drawRect_(self, dirtyRect):
         NSColor.windowBackgroundColor().setFill()
@@ -230,6 +230,19 @@ class AQIVisualizationView(NSView):
         
         return NSColor.grayColor()  # Default color for unknown metrics
 
+    @objc.python_method
+    def convert_temperature(self, celsius_value):
+        """Convert temperature based on unit preference"""
+        if self.temperature_unit == "°F":
+            return (celsius_value * 9/5) + 32
+        return celsius_value
+
+    @objc.python_method
+    def format_temperature(self, value):
+        """Format temperature with appropriate unit"""
+        converted_value = self.convert_temperature(value)
+        return f"{converted_value:.0f}{self.temperature_unit}"
+
 
     @objc.python_method
     def drawCharts(self):
@@ -246,14 +259,45 @@ class AQIVisualizationView(NSView):
             self.drawChart(metric, NSMakeRect(0, y_position, self.bounds().size.width, chart_height))
 
     @objc.python_method
+    def get_pollutant_range(self, current_value):
+        """Determine the appropriate range based on current value for pollutants"""
+        if current_value <= 50:
+            return 0, 50
+        elif current_value <= 100:
+            return 0, 100
+        elif current_value <= 150:
+            return 0, 150
+        elif current_value <= 200:
+            return 0, 200
+        elif current_value <= 300:
+            return 0, 300
+        else:
+            return 0, 500
+
+    @objc.python_method
+    def is_pollutant(self, metric):
+        """Check if the metric is a pollutant"""
+        return metric in ['pm25', 'pm10', 'o3', 'no2', 'so2', 'co']
+
+
+    @objc.python_method
     def drawChart(self, metric, rect):
-        def adjust_histogram_bounds(min_value, max_value):
+        def adjust_histogram_bounds(min_value, max_value, metric, current_value=None):
             if metric == 'pressure':
-                # Fixed bounds for pressure
-                return min_value * .99, max_value * 1.01
-            adjusted_min = min_value * 0.75
-            adjusted_max = max_value * 1.25
-            return adjusted_min, adjusted_max
+                # Use the actual min/max within our fixed bounds
+                return (max(self.pressure_range['min'], min_value), 
+                       min(self.pressure_range['max'], max_value))
+            elif metric == 'temperature':
+                # No need to convert here since values are already converted
+                adjusted_min = min_value * 0.75
+                adjusted_max = max_value * 1.25
+                return adjusted_min, adjusted_max
+            elif self.is_pollutant(metric) and current_value is not None:
+                return self.get_pollutant_range(current_value)
+            else:
+                adjusted_min = min_value * 0.75
+                adjusted_max = max_value * 1.25
+                return adjusted_min, adjusted_max
 
         data_index_map = {
             'timestamp': 0, 'city': 1, 'aqi': 2, 'pm25': 3, 'pm10': 4, 
@@ -263,25 +307,63 @@ class AQIVisualizationView(NSView):
         metric_index = data_index_map[metric]
         
         metric_data = [row[metric_index] if row[metric_index] is not None else None for row in self.data]
-        valid_data = [float(value) for value in metric_data if value is not None]
+        
+        if metric == 'temperature':
+            valid_data = [self.convert_temperature(float(value)) for value in metric_data if value is not None]
+            # Store converted values for plotting
+            converted_metric_data = [self.convert_temperature(float(value)) if value is not None else None for value in metric_data]
+        else:
+            valid_data = [float(value) for value in metric_data if value is not None]
+            converted_metric_data = metric_data
 
-        # Draw metric name and current reading as before...
+        # Draw metric name
         label_attrs = {
             NSFontAttributeName: NSFont.boldSystemFontOfSize_(10),
             NSForegroundColorAttributeName: self.textColor
         }
+
+        # Add temperature unit to the label if it's temperature
+        label_text = self.metric_labels[metric]
+        if metric == 'temperature':
+            label_text = f"{label_text} ({self.temperature_unit})"
+        
+
         NSString.stringWithString_(self.metric_labels[metric]).drawAtPoint_withAttributes_(
             NSMakePoint(5, rect.origin.y + rect.size.height - 25), label_attrs)
 
+        # Draw current reading
         current_value = metric_data[0] if metric_data and metric_data[0] is not None else '-'
-        NSString.stringWithString_(str(round(current_value) if current_value != '-' else '-')).drawAtPoint_withAttributes_(
+        if current_value != '-':
+            if metric == 'pressure':
+                current_value = f"{float(current_value):.0f}"
+            elif metric == 'temperature':
+                current_value = self.format_temperature(float(current_value))
+            elif metric == 'humidity':
+                current_value = f"{float(current_value):.0f}%"
+            elif metric == 'wind':
+                current_value = f"{float(current_value):.0f} m/s"
+            else:
+                current_value = str(round(float(current_value)))
+        NSString.stringWithString_(current_value).drawAtPoint_withAttributes_(
             NSMakePoint(self.labelWidth, rect.origin.y + rect.size.height - 25), label_attrs)
 
-        # Draw histogram with dynamic colors
+        # Draw histogram
         if valid_data:
-            max_value = max(valid_data)
-            min_value = min(valid_data)
-            adjusted_min, adjusted_max = adjust_histogram_bounds(min_value, max_value)
+            # Calculate min/max from valid_data (which is already converted for temperature)
+            if metric == 'pressure':
+                # For pressure, find actual min/max within our bounds
+                min_value = max(self.pressure_range['min'], min(valid_data))
+                max_value = min(self.pressure_range['max'], max(valid_data))
+            else:
+                max_value = max(valid_data)
+                min_value = min(valid_data)
+            
+            # Get current value for range calculation
+            current_val = float(metric_data[0]) if metric_data[0] is not None else None
+            if metric == 'temperature' and current_val is not None:
+                current_val = self.convert_temperature(current_val)
+            
+            adjusted_min, adjusted_max = adjust_histogram_bounds(min_value, max_value, metric, current_val)
             value_range = adjusted_max - adjusted_min
 
             histogram_rect = NSMakeRect(
@@ -292,23 +374,26 @@ class AQIVisualizationView(NSView):
             )
             bar_width = histogram_rect.size.width / len(self.data)
             
-            for i, value in enumerate(metric_data):
+            for i, value in enumerate(converted_metric_data):
                 if value is not None:
+                    value = float(value)
+                    
                     if value_range == 0:
                         height = histogram_rect.size.height * 0.5
                     else:
-                        normalized_value = (float(value) - adjusted_min) / value_range
+                        if self.is_pollutant(metric) or metric == 'pressure':
+                            value = max(adjusted_min, min(value, adjusted_max))
+                        normalized_value = (value - adjusted_min) / value_range
                         height = normalized_value * histogram_rect.size.height
 
                     x_position = histogram_rect.origin.x + i * bar_width
                     bar_rect = NSMakeRect(x_position, rect.origin.y, bar_width - 1, height)
                     
-                    # Get color based on the value
-                    color = self.get_color_for_metric(metric, float(value))
+                    color = self.get_color_for_metric(metric, value)
                     color.setFill()
                     NSBezierPath.fillRect_(bar_rect)
 
-            # Draw min and max values...
+            # Draw min and max values
             value_attrs = {
                 NSFontAttributeName: NSFont.systemFontOfSize_(10),
                 NSForegroundColorAttributeName: self.textColor
@@ -316,9 +401,19 @@ class AQIVisualizationView(NSView):
             min_x = self.bounds().size.width - self.minMaxWidth + 5
             max_x = self.bounds().size.width - self.minMaxWidth / 2 + 5
             
-            NSString.stringWithString_(f"{min_value:.0f}").drawAtPoint_withAttributes_(
+            if metric == 'pressure':
+                # Use fixed values for pressure with one decimal place
+                min_text = f"{adjusted_min:.0f}"
+                max_text = f"{adjusted_max:.0f}"
+            
+            else:
+                # For other metrics, use actual min/max with rounding
+                min_text = f"{min_value:.0f}"
+                max_text = f"{max_value:.0f}"
+            
+            NSString.stringWithString_(min_text).drawAtPoint_withAttributes_(
                 NSMakePoint(min_x, rect.origin.y + rect.size.height - 25), value_attrs)
-            NSString.stringWithString_(f"{max_value:.0f}").drawAtPoint_withAttributes_(
+            NSString.stringWithString_(max_text).drawAtPoint_withAttributes_(
                 NSMakePoint(max_x, rect.origin.y + rect.size.height - 25), value_attrs)
         else:
             no_data_attrs = {
@@ -327,8 +422,6 @@ class AQIVisualizationView(NSView):
             }
             NSString.stringWithString_("No Data").drawAtPoint_withAttributes_(
                 NSMakePoint(self.labelWidth + self.currentValueWidth, rect.origin.y + rect.size.height / 2), no_data_attrs)
-
-
 
     @objc.python_method
     def drawNoDataAvailable(self):

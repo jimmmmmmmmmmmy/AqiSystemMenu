@@ -29,7 +29,7 @@ class DetailWindow(NSObject):
         return self
 
     @objc.python_method
-    def showWindow_withText_andData_(self, title, text, data):
+    def showWindow_withText_andData_andTempUnit_(self, title, text, data, temperature_unit):
         logging.info(f"Showing DetailWindow with title: {title}")
         windowWidth = 400
         windowHeight = 600
@@ -77,11 +77,12 @@ class DetailWindow(NSObject):
             subview.removeFromSuperview()
 
         # Create visualization view with padding
-        visualizationView = AQIVisualizationView.alloc().initWithFrame_andData_(
+        visualizationView = AQIVisualizationView.alloc().initWithFrame_andData_andTempUnit_(
             NSMakeRect(padding, bottomPadding, 
-                      windowWidth - 2*padding, 
-                      windowHeight - bottomPadding - padding), 
-            stored_data
+                    windowWidth - 2*padding, 
+                    windowHeight - bottomPadding - padding), 
+            stored_data,
+            temperature_unit
         )
         contentView.addSubview_(visualizationView)
 

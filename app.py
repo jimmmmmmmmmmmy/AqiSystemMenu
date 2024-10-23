@@ -450,7 +450,8 @@ class OpenAir(rumps.App):
             details += f"Humidity: {iaqi.get('h', {}).get('v', 'N/A')}%\n"
             details += f"Wind: {iaqi.get('w', {}).get('v', 'N/A')} m/s"
 
-            self.detail_window.showWindow_withText_andData_("AQI Details", details, self.cached_data)
+            # Is it possible to pass temperature_unit to details?
+            self.detail_window.showWindow_withText_andData_andTempUnit_("AQI Details", details, self.cached_data, self.temperature_unit)
         else:
             rumps.notification("Error", "Failed to fetch AQI data", "")
 
