@@ -1,0 +1,29 @@
+# Python cache folders
+__pycache__/
+.eggs/
+
+# IDE folders
+.vscode/
+
+# Build and distribution folders
+build/
+dist/
+
+# Virtual environment
+new_venv/
+
+# Database files
+*.db
+
+# Log files
+*.log
+
+# DMG installers and zip files
+*.dmg
+AQIDisplayzip.zip
+
+# General system files
+.DS_Store
+
+# Keep these specific files
+!requirements.txt
